@@ -1,48 +1,61 @@
-'use client';
+'use client'
 
-import Image from "next/image";
-
-import { useEffect , useState } from "react";
-import { GetHelloInfo } from "@/services/root";
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getUserData } from '@/app/services/api'
 
 export default function Home() {
-
-  const [helloInfo, setHelloInfo] = useState([]);
+  const [user, setUser] = useState(null)
+  const router = useRouter()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await GetHelloInfo();
-      setHelloInfo(data.data);
-    }
-    fetchData();
-  }, []);
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
 
-  // console.log(helloInfo);
+      try {
+
+        const userData = await getUserData(token)
+        setUser(userData)
+
+      } catch (err) {
+        console.error('Error fetching user data:', err)
+        localStorage.removeItem('token')
+        router.push('/activation') // Aqui me debe redireccionar a activacion de la cuenta
+      }
+
+    }
+
+    fetchUser()
+  }, [router])
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    router.push('/login')
+  }
+
+  if (!user) {
+    return <div className="flex justify-center items-center min-h-screen">Cargando...</div>
+  }
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          { helloInfo.map((item, index ) => (
-            <li key={item.id}>{item.saludo}</li>
-          )) 
-          }
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-      </footer>
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-4 text-gray-800">Bienvenido</h1>
+        <div className="space-y-2 text-gray-800">
+          <p><strong>Nombre:</strong> {user.firstname}</p>
+          <p><strong>Apellido:</strong> {user.lastname}</p>
+          <p><strong>Email:</strong> {user.email}</p>
+          </div>
+        <button
+          onClick={handleLogout}
+          className="mt-6 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Cerrar Sesión
+        </button>
+      </div>
     </div>
-  );
+  )
 }
