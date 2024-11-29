@@ -17,10 +17,9 @@ export default function Home() {
       }
 
       try {
-
         const userData = await getUserData(token)
         setUser(userData)
-
+        console.log(userData);
       } catch (err) {
         console.error('Error fetching user data:', err)
         localStorage.removeItem('token')

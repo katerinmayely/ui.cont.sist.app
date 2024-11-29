@@ -41,14 +41,16 @@ export const getUserData = async (token) => {
   return response.json();
 };
 
-export const validateAccount = async (code) => { // Aqui configuro la API que validara el codigo
-  const response = await fetch(`${API_URL}/user`, {
+export const validateAccount = async (code) => {
+  const response = await fetch(`${API_URL}/activation`, {
+    method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify(code),
   });
   if (!response.ok) {
-    throw new Error('Error al obtener datos del usuario');
+    throw new Error('Error en la activacion de la cuenta.');
   }
   return response.json();
 };
