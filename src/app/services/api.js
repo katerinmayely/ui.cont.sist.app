@@ -41,16 +41,19 @@ export const getUserData = async (token) => {
   return response.json();
 };
 
-export const validateAccount = async (code) => {
+// Consumir endpoint para activar usuario
+export const activateUser = async (token, code) => {
   const response = await fetch(`${API_URL}/activation`, {
-    method: 'POST',
+    method: 'POST', // Especificar el método HTTP
     headers: {
-      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`, // Token de autorización
+      'Content-Type': 'application/json', // Encabezado para enviar JSON
     },
-    body: JSON.stringify(code),
+    body: JSON.stringify({ code }), // Convertir el código a JSON
   });
+
   if (!response.ok) {
-    throw new Error('Error en la activacion de la cuenta.');
+    throw new Error('Error al activar el usuario');
   }
-  return response.json();
+  return await response.json();
 };

@@ -31,20 +31,31 @@ export default function Login() {
     try {
       const data = await loginUser({ email, password })
       localStorage.setItem('token', data.idToken)
+
       setIsLogin(false)
-      router.push('/')
+
+      const userState = data.active;
+      console.log(userState)
+
+      if(userState){
+        router.push('/') // Ir a la pagina principal
+      }else{
+        router.push('activation') // Ir a la p[agina de activacion
+      }
+
     } catch (err) {
+      setIsLogin(false)
       setError(err.message || 'Error en el inicio de sesión')
     }
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
+    <div className="flex justify-center items-center mt-20 bg-dark-100">
+      <div className="w-full max-w-md bg-gray-100 rounded-lg shadow-md p-8">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Inicio de Sesión</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo</label>
             <input
               id="email"
               type="email"
