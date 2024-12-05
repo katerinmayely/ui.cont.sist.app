@@ -35,7 +35,6 @@ export default function Login() {
       setIsLogin(false)
 
       const userState = data.active;
-      console.log(userState)
 
       if(userState){
         router.push('/') // Ir a la pagina principal

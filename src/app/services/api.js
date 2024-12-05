@@ -1,4 +1,5 @@
-import { API_URL } from '@/app/utils/settings';
+import { API_URL, GRAPHQL_URL } from '@/app/utils/settings';
+import { GraphQLClient } from 'graphql-request';
 
 export const registerUser = async (userData) => {
     const response = await fetch(`${API_URL}/register`, {
@@ -57,3 +58,84 @@ export const activateUser = async (token, code) => {
   }
   return await response.json();
 };
+
+// GraphQL
+// Funcion para crear un nuevo cliente de GraphQL: Me sirve para autenticar el uso del servicio
+// para poder hacer las queries sin problemas
+const createGraphQLClient = (token) => {
+  return new GraphQLClient(GRAPHQL_URL, {
+    headers: token ? {
+      Authorization: `Bearer ${token}`,
+    } : {},
+  });
+};
+
+export const getAccounts = async (email, token) => {
+  const graphQLClient = createGraphQLClient(token);
+
+  const query = `
+    query Transacciones($email: String) {
+      usuarios(email: $email) {
+        email
+        id
+        cuentas {
+          account_name
+          id
+          total
+          transacciones {
+            amount
+            current_balance
+            description
+            etiquetas {
+              etiqueta {
+                id
+                name
+              }
+            }
+            transaction_date
+          }
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    "email": email
+  };
+
+  try {
+    const data = await graphQLClient.request(query, variables);
+    return data
+  } catch (error) {
+    console.log("Error fetching user accounts", error);
+    throw new Error("Error al obtener las cuentas del usuario.");
+  }
+}
+
+export const getTransactionsCount = async (idUser, token) => {
+  const graphQLClient = createGraphQLClient(token);
+
+  const query = `
+    query conteoTransaccionesTag($id_user: Int!) {
+      conteoTransaccionesTag(id_user: $id_user) {
+        conteo
+        tag {
+          id
+          name
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    "id_user": idUser
+  };
+
+  try {
+    const data = await graphQLClient.request(query, variables);
+    return data
+  } catch (error) {
+    console.log("Error fetching user transactions count", error);
+    throw new Error("Error al obtener el conteo de cuentas por tag.");
+  }
+}
