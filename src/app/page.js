@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAccounts, getTransactionsCount, getUserData } from '@/app/services/api';
-import AccountCard from './components/AccountCard';
 import getTransactionCountByTag from './utils/functions';
+import UserInfo from './components/UserInfo';
+import TransactionCard from './components/TransactionCard';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -56,10 +57,10 @@ export default function Home() {
         let id = Number(info.usuarios[0].id);
         setIdUser(id);
         
-        if (info && info.usuarios && info.usuarios[0] && info.usuarios[0].cuentas) {
+        if (info && info.usuarios[0].cuentas) {
           setAccountsInfo(info.usuarios[0].cuentas);
 
-          if(info.usuarios[0].cuentas.length > 0){
+          if(accountsInfo.length > 0){
             setHasAccounts(true);
           }
         } else {
@@ -78,16 +79,12 @@ export default function Home() {
     };
 
     fetchUser();
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
+  }, [accountsInfo.length, idUser, router]);
 
   const handleAccountClick = async (account) => {
     setSelectedAccount(account);
-    setTransactions(account.transacciones);};
+    setTransactions(account.transacciones);
+  };
 
   if (!user) {
     return <div className="flex justify-center items-center min-h-screen">Cargando...</div>;
@@ -95,24 +92,8 @@ export default function Home() {
 
   return (
     <div className="bg-white p-4">
-      <div className="max-w-4xl mx-auto bg-gray-50 rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-semibold text-purple-700 mb-6">
-          Bienvenido (a) {user.firstname} {user.lastname}
-        </h1>
-        <div className="text-gray-700 mb-6">
-          <p>
-            <strong className="font-medium text-gray-900">Correo electrónico:</strong> {user.email}
-          </p>
-        </div>
-        <div className="flex justify-end">
-          <button
-            onClick={handleLogout}
-            className="py-2 px-6 text-sm font-medium text-white bg-purple-600 rounded-md shadow-md hover:bg-purple-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          >
-            Cerrar Sesión
-          </button>
-        </div>
-      </div>
+
+      <UserInfo key={user.id} user={user} router={router}/>
 
       <p className='text-black flex justify-center mt-10'>
         <strong>Han transcurrido {timeTrans} desde la activación de la cuenta.</strong>
@@ -155,18 +136,7 @@ export default function Home() {
                     <p>No hay transacciones disponibles para esta cuenta.</p>
                   ) : (
                     transactions.map((transaction, index) => (
-                      <div key={index} className="bg-white text-black p-4 rounded-md shadow-md">
-                        <p><strong>Descripción:</strong> {transaction.description}</p>
-                        <p><strong>Monto:</strong> L.{transaction.amount}</p>
-                        <p><strong>Fecha:</strong> {new Date(transaction.transaction_date).toLocaleDateString()}</p>
-                        <div className="mt-2">
-                          {transaction.etiquetas.map((etiqueta, i) => (
-                            <span key={i} title={'Tienes ' + getTransactionCountByTag(transactionCount, etiqueta.etiqueta.name) + ' transacciones con esta etiqueta.'} className="cursor-default text-sm bg-purple-200 text-purple-700 px-2 py-1 rounded-md mr-2">
-                              {etiqueta.etiqueta.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                      <TransactionCard key={index} index={index} transaction={transaction} transactionCount={transactionCount}/>
                     ))
                   )}
                 </div>
